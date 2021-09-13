@@ -90,6 +90,21 @@ public class FileUtils {
                 }
             }
         }
+        list = filterEmptyDirectory(list, filter);
         return list;
+    }
+
+    private static List<File> filterEmptyDirectory(List<File> files, FileFilter filter) {
+        List<File> effective = new ArrayList<>();
+        for (File file : files) {
+            if(file.isDirectory()) {
+                if (file.listFiles(filter).length > 0) {
+                    effective.add(file);
+                }
+            } else {
+                effective.add(file);
+            }
+        }
+        return effective;
     }
 }

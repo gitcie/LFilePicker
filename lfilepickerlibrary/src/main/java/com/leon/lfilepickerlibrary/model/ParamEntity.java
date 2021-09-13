@@ -1,7 +1,5 @@
 package com.leon.lfilepickerlibrary.model;
 
-import com.leon.lfilepickerlibrary.R;
-
 import java.io.Serializable;
 
 /**
@@ -68,11 +66,11 @@ public class ParamEntity implements Serializable {
         this.backgroundColor = backgroundColor;
     }
 
-    public boolean isMutilyMode() {
+    public boolean isMultiMode() {
         return mutilyMode;
     }
 
-    public void setMutilyMode(boolean mutilyMode) {
+    public void setMultiMode(boolean mutilyMode) {
         this.mutilyMode = mutilyMode;
     }
 

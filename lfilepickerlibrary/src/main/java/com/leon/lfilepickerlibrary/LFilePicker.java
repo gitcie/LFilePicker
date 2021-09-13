@@ -1,11 +1,12 @@
 package com.leon.lfilepickerlibrary;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.StyleRes;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.StyleRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.leon.lfilepickerlibrary.model.ParamEntity;
 import com.leon.lfilepickerlibrary.ui.LFilePickerActivity;
@@ -15,9 +16,9 @@ import com.leon.lfilepickerlibrary.ui.LFilePickerActivity;
  * 时间：2017/3/20 16:57
  */
 public class LFilePicker {
-    private Activity mActivity;
+    private AppCompatActivity mActivity;
     private Fragment mFragment;
-    private android.support.v4.app.Fragment mSupportFragment;
+    private Fragment mSupportFragment;
     private String mTitle;
     private String mTitleColor;
     private int theme = R.style.LFileTheme;
@@ -25,7 +26,9 @@ public class LFilePicker {
     private String mBackgroundColor;
     private int mBackStyle;
     private int mRequestCode;
-    private boolean mMutilyMode = true;
+    private boolean mMultiMode = true;
+
+    //true为文件选择模式，false为文件夹选择模式，默认为true
     private boolean mChooseMode = true;
     private String mAddText;
     private int mIconStyle;
@@ -34,7 +37,7 @@ public class LFilePicker {
     private int mMaxNum;
     private String mStartPath;
     private boolean mIsGreater = true;//是否大于
-    private long mFileSize;
+    private long mFileSize = 100 * 1024 * 1024;
 
     /**
      * 绑定Activity
@@ -42,7 +45,7 @@ public class LFilePicker {
      * @param activity
      * @return
      */
-    public LFilePicker withActivity(Activity activity) {
+    public LFilePicker withActivity(AppCompatActivity activity) {
         this.mActivity = activity;
         return this;
     }
@@ -64,7 +67,7 @@ public class LFilePicker {
      * @param supportFragment
      * @return
      */
-    public LFilePicker withSupportFragment(android.support.v4.app.Fragment supportFragment) {
+    public LFilePicker withSupportFragment(Fragment supportFragment) {
         this.mSupportFragment = supportFragment;
         return this;
     }
@@ -151,11 +154,11 @@ public class LFilePicker {
     /**
      * 设置选择模式，默认为true,多选；false为单选
      *
-     * @param isMutily
+     * @param isMulti
      * @return
      */
-    public LFilePicker withMutilyMode(boolean isMutily) {
-        this.mMutilyMode = isMutily;
+    public LFilePicker withMultiMode(boolean isMulti) {
+        this.mMultiMode = isMulti;
         return this;
     }
 
@@ -219,14 +222,13 @@ public class LFilePicker {
         return this;
     }
 
-    /**
-     * 设置选择模式，true为文件选择模式，false为文件夹选择模式，默认为true
-     *
-     * @param chooseMode
-     * @return
-     */
-    public LFilePicker withChooseMode(boolean chooseMode) {
-        this.mChooseMode = chooseMode;
+    public LFilePicker withChooseFile() {
+        this.mChooseMode = true;
+        return this;
+    }
+
+    public LFilePicker withChooseFolder() {
+        this.mChooseMode = false;
         return this;
     }
 
@@ -291,7 +293,7 @@ public class LFilePicker {
         paramEntity.setTitleStyle(mTitleStyle);
         paramEntity.setBackgroundColor(mBackgroundColor);
         paramEntity.setBackIcon(mBackStyle);
-        paramEntity.setMutilyMode(mMutilyMode);
+        paramEntity.setMultiMode(mMultiMode);
         paramEntity.setAddText(mAddText);
         paramEntity.setIconStyle(mIconStyle);
         paramEntity.setFileTypes(mFileTypes);

@@ -8,7 +8,7 @@ import java.io.FileFilter;
  * 时间：2017/3/24 13:43
  */
 public class LFileFilter implements FileFilter {
-    private String[] mTypes;
+    private final String[] mTypes;
 
     public LFileFilter(String[] types) {
         this.mTypes = types;
@@ -16,16 +16,20 @@ public class LFileFilter implements FileFilter {
 
     @Override
     public boolean accept(File file) {
+        String fileName = file.getName().toLowerCase();
+        if (fileName.startsWith(".")) { //不显示隐藏文件夹
+            return false;
+        }
         if (file.isDirectory()) {
-            return true;
+            return  true;
         }
         if (mTypes != null && mTypes.length > 0) {
-            for (int i = 0; i < mTypes.length; i++) {
-                if (file.getName().endsWith(mTypes[i].toLowerCase()) || file.getName().endsWith(mTypes[i].toUpperCase())) {
+            for (String mType : mTypes) {
+                if (fileName.endsWith(mType.toLowerCase())) {
                     return true;
                 }
             }
-        }else {
+        } else {
             return true;
         }
         return false;

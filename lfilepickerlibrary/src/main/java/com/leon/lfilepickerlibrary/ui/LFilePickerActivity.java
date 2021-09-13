@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,13 +13,17 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+
 import com.leon.lfilepickerlibrary.R;
 import com.leon.lfilepickerlibrary.adapter.PathAdapter;
 import com.leon.lfilepickerlibrary.filter.LFileFilter;
 import com.leon.lfilepickerlibrary.model.ParamEntity;
 import com.leon.lfilepickerlibrary.utils.Constant;
 import com.leon.lfilepickerlibrary.utils.FileUtils;
-import com.leon.lfilepickerlibrary.utils.StringUtils;
 import com.leon.lfilepickerlibrary.widget.EmptyRecyclerView;
 
 import java.io.File;
@@ -31,14 +33,15 @@ import java.util.List;
 public class LFilePickerActivity extends AppCompatActivity {
 
     private final String TAG = "FilePickerLeon";
-    private EmptyRecyclerView mRecylerView;
+    private final static String SD_CARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
+    private EmptyRecyclerView mRecyclerView;
     private View mEmptyView;
     private TextView mTvPath;
     private TextView mTvBack;
     private Button mBtnAddBook;
     private String mPath;
-    private List<File> mListFiles;
-    private ArrayList<String> mListNumbers = new ArrayList<String>();//存放选中条目的数据地址
+    private List<File> mCurrentFileList;
+    private final ArrayList<String> mListNumbers = new ArrayList<String>();//存放选中条目的数据地址
     private PathAdapter mPathAdapter;
     private Toolbar mToolbar;
     private ParamEntity mParamEntity;
@@ -63,18 +66,16 @@ public class LFilePickerActivity extends AppCompatActivity {
             return;
         }
         mPath = mParamEntity.getPath();
-        if (StringUtils.isEmpty(mPath)) {
-            //如果没有指定路径，则使用默认路径
-            mPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        }
-        mTvPath.setText(mPath);
+        mPath = TextUtils.isEmpty(mPath) ? SD_CARD_PATH : mPath;
+        setNavigationPath(mPath);
+
         mFilter = new LFileFilter(mParamEntity.getFileTypes());
-        mListFiles = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
-        mPathAdapter = new PathAdapter(mListFiles, this, mFilter, mParamEntity.isMutilyMode(), mParamEntity.isGreater(), mParamEntity.getFileSize());
-        mRecylerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        mPathAdapter.setmIconStyle(mParamEntity.getIconStyle());
-        mRecylerView.setAdapter(mPathAdapter);
-        mRecylerView.setmEmptyView(mEmptyView);
+        mCurrentFileList = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
+        mPathAdapter = new PathAdapter(mCurrentFileList, this, mFilter, mParamEntity.isMultiMode(), mParamEntity.isGreater(), mParamEntity.getFileSize());
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+        mPathAdapter.setIconStyle(mParamEntity.getIconStyle());
+        mRecyclerView.setAdapter(mPathAdapter);
+        mRecyclerView.setmEmptyView(mEmptyView);
         initListener();
     }
 
@@ -82,8 +83,12 @@ public class LFilePickerActivity extends AppCompatActivity {
      * 更新Toolbar展示
      */
     private void initToolbar() {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar == null) {
+            return;
+        }
         if (mParamEntity.getTitle() != null) {
-            mToolbar.setTitle(mParamEntity.getTitle());
+            getSupportActionBar().setTitle(mParamEntity.getTitle());
         }
         if (mParamEntity.getTitleStyle() != 0) {
             mToolbar.setTitleTextAppearance(this, mParamEntity.getTitleStyle());
@@ -114,14 +119,14 @@ public class LFilePickerActivity extends AppCompatActivity {
     }
 
     private void updateAddButton() {
-        if (!mParamEntity.isMutilyMode()) {
+        if (!mParamEntity.isMultiMode()) {
             mBtnAddBook.setVisibility(View.GONE);
         }
         if (!mParamEntity.isChooseMode()) {
             mBtnAddBook.setVisibility(View.VISIBLE);
             mBtnAddBook.setText(getString(R.string.lfile_OK));
             //文件夹模式默认为单选模式
-            mParamEntity.setMutilyMode(false);
+            mParamEntity.setMultiMode(false);
         }
     }
 
@@ -133,45 +138,27 @@ public class LFilePickerActivity extends AppCompatActivity {
         mTvBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String tempPath = new File(mPath).getParent();
-                if (tempPath == null) {
-                    return;
-                }
-                mPath = tempPath;
-                mListFiles = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
-                mPathAdapter.setmListData(mListFiles);
-                mPathAdapter.updateAllSelelcted(false);
-                mIsAllSelected = false;
-                updateMenuTitle();
-                mBtnAddBook.setText(getString(R.string.lfile_Selected));
-                mRecylerView.scrollToPosition(0);
-                setShowPath(mPath);
-                //清除添加集合中数据
-                mListNumbers.clear();
-                if (mParamEntity.getAddText() != null) {
-                    mBtnAddBook.setText(mParamEntity.getAddText());
-                } else {
-                    mBtnAddBook.setText(R.string.lfile_Selected);
-                }
+                navigateUpFolder();
             }
         });
+
         mPathAdapter.setOnItemClickListener(new PathAdapter.OnItemClickListener() {
             @Override
             public void click(int position) {
-                if (mParamEntity.isMutilyMode()) {
-                    if (mListFiles.get(position).isDirectory()) {
+                if (mParamEntity.isMultiMode()) {
+                    if (mCurrentFileList.get(position).isDirectory()) {
                         //如果当前是目录，则进入继续查看目录
-                        chekInDirectory(position);
+                        checkInDirectory(position);
                         mPathAdapter.updateAllSelelcted(false);
                         mIsAllSelected = false;
                         updateMenuTitle();
                         mBtnAddBook.setText(getString(R.string.lfile_Selected));
                     } else {
                         //如果已经选择则取消，否则添加进来
-                        if (mListNumbers.contains(mListFiles.get(position).getAbsolutePath())) {
-                            mListNumbers.remove(mListFiles.get(position).getAbsolutePath());
+                        if (mListNumbers.contains(mCurrentFileList.get(position).getAbsolutePath())) {
+                            mListNumbers.remove(mCurrentFileList.get(position).getAbsolutePath());
                         } else {
-                            mListNumbers.add(mListFiles.get(position).getAbsolutePath());
+                            mListNumbers.add(mCurrentFileList.get(position).getAbsolutePath());
                         }
                         if (mParamEntity.getAddText() != null) {
                             mBtnAddBook.setText(mParamEntity.getAddText() + "( " + mListNumbers.size() + " )");
@@ -186,13 +173,13 @@ public class LFilePickerActivity extends AppCompatActivity {
                     }
                 } else {
                     //单选模式直接返回
-                    if (mListFiles.get(position).isDirectory()) {
-                        chekInDirectory(position);
+                    if (mCurrentFileList.get(position).isDirectory()) {
+                        checkInDirectory(position);
                         return;
                     }
                     if (mParamEntity.isChooseMode()) {
                         //选择文件模式,需要添加文件路径，否则为文件夹模式，直接返回当前路径
-                        mListNumbers.add(mListFiles.get(position).getAbsolutePath());
+                        mListNumbers.add(mCurrentFileList.get(position).getAbsolutePath());
                         chooseDone();
                     } else {
                         Toast.makeText(LFilePickerActivity.this, R.string.lfile_ChooseTip, Toast.LENGTH_SHORT).show();
@@ -220,20 +207,40 @@ public class LFilePickerActivity extends AppCompatActivity {
         });
     }
 
+    private void navigateUpFolder() {
+        String tempPath = new File(mPath).getParent();
+        if (tempPath == null) {
+            return;
+        }
+        mPath = tempPath;
+        mCurrentFileList = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
+        mPathAdapter.setFileList(mCurrentFileList);
+        mPathAdapter.updateAllSelelcted(false);
+        mIsAllSelected = false;
+        updateMenuTitle();
+        mBtnAddBook.setText(getString(R.string.lfile_Selected));
+        mRecyclerView.scrollToPosition(0);
+        setNavigationPath(mPath);
+        //清除添加集合中数据
+        mListNumbers.clear();
+        if (mParamEntity.getAddText() != null) {
+            mBtnAddBook.setText(mParamEntity.getAddText());
+        } else {
+            mBtnAddBook.setText(R.string.lfile_Selected);
+        }
+    }
 
     /**
      * 点击进入目录
-     *
-     * @param position
      */
-    private void chekInDirectory(int position) {
-        mPath = mListFiles.get(position).getAbsolutePath();
-        setShowPath(mPath);
+    private void checkInDirectory(int position) {
+        mPath = mCurrentFileList.get(position).getAbsolutePath();
+        setNavigationPath(mPath);
         //更新数据源
-        mListFiles = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
-        mPathAdapter.setmListData(mListFiles);
+        mCurrentFileList = FileUtils.getFileList(mPath, mFilter, mParamEntity.isGreater(), mParamEntity.getFileSize());
+        mPathAdapter.setFileList(mCurrentFileList);
         mPathAdapter.notifyDataSetChanged();
-        mRecylerView.scrollToPosition(0);
+        mRecyclerView.scrollToPosition(0);
     }
 
     /**
@@ -258,7 +265,7 @@ public class LFilePickerActivity extends AppCompatActivity {
      * 初始化控件
      */
     private void initView() {
-        mRecylerView = (EmptyRecyclerView) findViewById(R.id.recylerview);
+        mRecyclerView = (EmptyRecyclerView) findViewById(R.id.recylerview);
         mTvPath = (TextView) findViewById(R.id.tv_path);
         mTvBack = (TextView) findViewById(R.id.tv_back);
         mBtnAddBook = (Button) findViewById(R.id.btn_addbook);
@@ -276,13 +283,9 @@ public class LFilePickerActivity extends AppCompatActivity {
         return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
     }
 
-    /**
-     * 显示顶部地址
-     *
-     * @param path
-     */
-    private void setShowPath(String path) {
-        mTvPath.setText(path);
+    private void setNavigationPath(String path) {
+        mTvPath.setText(path.replace(SD_CARD_PATH, "我的手机"));
+        mTvBack.setVisibility(path.equals(SD_CARD_PATH) ? View.INVISIBLE : View.VISIBLE);
     }
 
     @Override
@@ -295,11 +298,9 @@ public class LFilePickerActivity extends AppCompatActivity {
 
     /**
      * 更新选项菜单展示，如果是单选模式，不显示全选操作
-     *
-     * @param menu
      */
     private void updateOptionsMenu(Menu menu) {
-        mMenu.findItem(R.id.action_selecteall_cancel).setVisible(mParamEntity.isMutilyMode());
+        mMenu.findItem(R.id.action_selecteall_cancel).setVisible(mParamEntity.isMultiMode());
     }
 
     @Override
@@ -309,7 +310,7 @@ public class LFilePickerActivity extends AppCompatActivity {
             mPathAdapter.updateAllSelelcted(!mIsAllSelected);
             mIsAllSelected = !mIsAllSelected;
             if (mIsAllSelected) {
-                for (File mListFile : mListFiles) {
+                for (File mListFile : mCurrentFileList) {
                     //不包含再添加，避免重复添加
                     if (!mListFile.isDirectory() && !mListNumbers.contains(mListFile.getAbsolutePath())) {
                         mListNumbers.add(mListFile.getAbsolutePath());
@@ -327,6 +328,20 @@ public class LFilePickerActivity extends AppCompatActivity {
             updateMenuTitle();
         }
         return true;
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mPath.equals(SD_CARD_PATH)) {
+                return super.onKeyDown(keyCode, event);
+            } else {
+                navigateUpFolder();
+                return true;
+            }
+        } else {
+            return super.onKeyDown(keyCode, event);
+        }
     }
 
     /**

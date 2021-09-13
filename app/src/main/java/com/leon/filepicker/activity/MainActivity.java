@@ -1,14 +1,17 @@
 package com.leon.filepicker.activity;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
@@ -83,20 +86,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void openFromActivity(View view) {
+        String sdCard = Environment.getExternalStorageDirectory().getAbsolutePath();
         new LFilePicker()
                 .withActivity(this)
                 .withRequestCode(Consant.REQUESTCODE_FROM_ACTIVITY)
                 .withTitle("文件选择")
                 .withIconStyle(mIconType)
                 .withBackIcon(mBackArrawType)
-                .withMutilyMode(false)
+                .withMultiMode(false)
                 .withMaxNum(2)
-                .withStartPath("/storage/emulated/0/Download")//指定初始显示路径
+                .withStartPath(sdCard)//指定初始显示路径
                 .withNotFoundBooks("至少选择一个文件")
                 .withIsGreater(false)//过滤文件大小 小于指定大小的文件
-                .withFileSize(500 * 1024)//指定文件大小为500K
-                .withChooseMode(false)//文件夹选择模式
-                //.withFileFilter(new String[]{"txt", "png", "docx"})
+//                .withFileSize(500 * 1024)//指定文件大小为500K
+                .withFileFilter(new String[]{"txt", "doc","docx", "pdf", "xls", "xlsx"})
                 .start();
     }
 
