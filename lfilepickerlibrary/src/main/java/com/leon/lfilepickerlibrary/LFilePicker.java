@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.leon.lfilepickerlibrary.model.ParamEntity;
+import com.leon.lfilepickerlibrary.ui.AntFilePickerActivity;
 import com.leon.lfilepickerlibrary.ui.LFilePickerActivity;
 
 /**
@@ -275,11 +276,11 @@ public class LFilePicker {
     private Intent initIntent() {
         Intent intent;
         if (mActivity != null) {
-            intent = new Intent(mActivity, LFilePickerActivity.class);
+            intent = new Intent(mActivity, AntFilePickerActivity.class);
         } else if (mFragment != null) {
-            intent = new Intent(mFragment.getActivity(), LFilePickerActivity.class);
+            intent = new Intent(mFragment.getActivity(), AntFilePickerActivity.class);
         } else {
-            intent = new Intent(mSupportFragment.getActivity(), LFilePickerActivity.class);
+            intent = new Intent(mSupportFragment.getActivity(), AntFilePickerActivity.class);
         }
         return intent;
     }

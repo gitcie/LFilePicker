@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.leon.filepicker.R;
 import com.leon.lfilepickerlibrary.LFilePicker;
 import com.leon.lfilepickerlibrary.utils.Constant;
+import com.leon.lfilepickerlibrary.utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initView() {
-        mRgIconType = (RadioGroup) findViewById(R.id.rg_iconstyle);
-        mRgBackArrawType = (RadioGroup) findViewById(R.id.rg_backarrawstyle);
+        mRgIconType = findViewById(R.id.rg_iconstyle);
+        mRgBackArrawType = findViewById(R.id.rg_backarrawstyle);
     }
 
     private void initListener() {
@@ -101,6 +102,14 @@ public class MainActivity extends AppCompatActivity {
 //                .withFileSize(500 * 1024)//指定文件大小为500K
                 .withFileFilter(new String[]{"txt", "doc","docx", "pdf", "xls", "xlsx"})
                 .start();
+        String[] mimeTypes = {
+                FileUtils.MIME_TYPE_DOC,
+                FileUtils.MIME_TYPE_DOCX,
+                FileUtils.MIME_TYPE_XLS,
+                FileUtils.MIME_TYPE_XLSX,
+                FileUtils.MIME_TYPE_PPTX
+        };
+        FileUtils.queryLatestUsedFiles(this, mimeTypes);
     }
 
     public void openFragmentActivity(View view) {

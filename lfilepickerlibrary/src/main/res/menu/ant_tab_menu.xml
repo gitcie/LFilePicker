@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/navigation_latest"
+        android:title="@string/ant_menu_latest"
+        android:icon="@drawable/ic_home_black_24dp"
+        />
+
+    <item
+        android:id="@+id/navigation_browse"
+        android:title="@string/ant_menu_sdcard"
+        android:icon="@drawable/icon_file_browse"
+        />
+</menu>

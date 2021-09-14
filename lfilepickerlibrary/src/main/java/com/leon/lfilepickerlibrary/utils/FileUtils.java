@@ -1,9 +1,17 @@
 package com.leon.lfilepickerlibrary.utils;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.database.Cursor;
+import android.provider.MediaStore;
+import android.provider.MediaStore.Images.Media;
 import android.util.Log;
+
+import com.leon.lfilepickerlibrary.model.ResolverFile;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +23,50 @@ import java.util.List;
  * Created by Dimorinny on 24.10.15.
  */
 public class FileUtils {
+    public final static String MIME_TYPE_TXT = "text/plain";
+    public final static String MIME_TYPE_DOC = "application/msword";
+    public final static String MIME_TYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    public final static String MIME_TYPE_XLS = "application/vnd.ms-excel";
+    public final static String MIME_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    public final static String MIME_TYPE_PDF = "application/pdf";
+    public final static String MIME_TYPE_PPT = "application/vnd.ms-powerpoint";
+    public final static String MIME_TYPE_PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+    public static List<ResolverFile> queryLatestUsedFiles(Context context, String[] mimeTypes) {
+        List<ResolverFile> latestUsedFiles = new ArrayList<>();
+        ContentResolver resolver = context.getContentResolver();
+        String[] columns = {Media._ID, Media.DATA, Media.SIZE, Media.DISPLAY_NAME, Media.MIME_TYPE, Media.DATE_ADDED};
+        StringBuilder whereBuilder = new StringBuilder();
+        for (int i = 0; i < mimeTypes.length; i++) {
+            whereBuilder = whereBuilder.append("or " + Media.MIME_TYPE + " = ? ");
+        }
+        String wheres = whereBuilder.substring(3);
+        String orderBys = "date_modified desc";
+        try (Cursor cursor = resolver.query(MediaStore.Files.getContentUri("external"), columns, wheres, mimeTypes, orderBys)) {
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
+                    int id = cursor.getInt(cursor.getColumnIndex(Media._ID));
+                    String path = cursor.getString(cursor.getColumnIndex(Media.DATA));
+                    String mimeType = cursor.getString(cursor.getColumnIndex(Media.MIME_TYPE));
+                    long createTime = cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED));
+                    File file = new File(path);
+                    if (file.exists()) {
+                        ResolverFile rf = new ResolverFile();
+                        rf.setId(id);
+                        rf.setPath(path);
+                        rf.setMimeType(mimeType);
+                        rf.setCreateTime(createTime);
+                        latestUsedFiles.add(rf);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return latestUsedFiles;
+    }
+
+
     public static List<File> getFileListByDirPath(String path, FileFilter filter) {
         File directory = new File(path);
         File[] files = directory.listFiles(filter);

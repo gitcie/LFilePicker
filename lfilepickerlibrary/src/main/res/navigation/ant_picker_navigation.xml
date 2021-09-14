@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ant_tab_bar"
+    app:startDestination="@+id/navigation_latest">
+
+    <fragment
+        android:id="@+id/navigation_latest"
+        android:name="com.leon.lfilepickerlibrary.ui.AntFilePickFragment"
+        android:label="@string/ant_menu_latest"
+        tools:layout="@layout/frag_file_picker"
+        />
+
+    <fragment
+        android:id="@+id/navigation_browse"
+        android:name="com.leon.lfilepickerlibrary.ui.NextFragment"
+        android:label="@string/ant_menu_sdcard"
+        tools:layout="@layout/frag_file_picker"
+        />
+
+</navigation>

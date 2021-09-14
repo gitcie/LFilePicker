@@ -5,7 +5,7 @@
     <style name="LFileTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/white</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="colorPrimary">@color/lfile_colorPrimary</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/lfile_colorPrimaryDark</item>
         <item name="colorAccent">@color/lfile_colorAccent</item>
         <item name="homeAsUpIndicator">@mipmap/lfile_back1</item>
@@ -50,6 +50,21 @@
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">left</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="bottom_navigation_inactive">
+        <item name="android:textColor">#666</item>
+        <item name="android:textSize">12sp</item>
+    </style>'
+
+    <style name="bottom_navigation_active">
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="bottomNaviTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="android:textColorSecondary">@color/colorPrimary</item>
     </style>
 
 </resources>

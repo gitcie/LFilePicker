@@ -9,6 +9,9 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true">
+        <activity android:name=".ui.AntFilePickerActivity"
+            android:theme="@style/BottomNavi"
+            />
         <activity
             android:name=".ui.LFilePickerActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>

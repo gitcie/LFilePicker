@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 作者：Leon
@@ -71,7 +72,7 @@ public class PathAdapter extends RecyclerView.Adapter<PathAdapter.PathViewHolder
     public void onBindViewHolder(@NonNull final PathViewHolder holder, final int position) {
         final File file = mListData.get(position);
         if (file.isFile()) {
-            updateFileIconStyle(holder.ivType);
+            updateFileIconStyle(holder.ivType, file);
             holder.tvName.setText(file.getName());
             holder.tvDetail.setText(mContext.getString(R.string.lfile_FileSize) + " " + FileUtils.getReadableFileSize(file.length()));
             holder.cbChoose.setVisibility(View.VISIBLE);
@@ -131,18 +132,36 @@ public class PathAdapter extends RecyclerView.Adapter<PathAdapter.PathViewHolder
         }
     }
 
-    private void updateFileIconStyle(ImageView imageView) {
-        switch (mIconStyle) {
-            case Constant.ICON_STYLE_BLUE:
-                imageView.setBackgroundResource(R.mipmap.lfile_file_style_blue);
-                break;
-            case Constant.ICON_STYLE_GREEN:
-                imageView.setBackgroundResource(R.mipmap.lfile_file_style_green);
-                break;
-            case Constant.ICON_STYLE_YELLOW:
-                imageView.setBackgroundResource(R.mipmap.lfile_file_style_yellow);
-                break;
+    private void updateFileIconStyle(ImageView imageView, File file) {
+//        switch (mIconStyle) {
+//            case Constant.ICON_STYLE_BLUE:
+//                imageView.setBackgroundResource(R.mipmap.lfile_file_style_blue);
+//                break;
+//            case Constant.ICON_STYLE_GREEN:
+//                imageView.setBackgroundResource(R.mipmap.lfile_file_style_green);
+//                break;
+//            case Constant.ICON_STYLE_YELLOW:
+//                imageView.setBackgroundResource(R.mipmap.lfile_file_style_yellow);
+//                break;
+//        }
+        int fileIndicateIconId = R.mipmap.lfile_file_style_blue;
+        String fileName = file.getName();
+        int lastDotIndex = fileName.lastIndexOf(".");
+        if (lastDotIndex != -1 && lastDotIndex < fileName.length() - 1) {
+            String suffix = fileName.substring(lastDotIndex + 1).toLowerCase(Locale.getDefault());
+            if ("txt".equals(suffix)) {
+                fileIndicateIconId = R.drawable.icon_txt;
+            } else if (suffix.matches("doc|docx")) {
+                fileIndicateIconId = R.drawable.icon_doc;
+            } else if (suffix.matches("xls|xlsx")) {
+                fileIndicateIconId = R.drawable.icon_xls;
+            } else if (suffix.matches("ppt|pptx")) {
+                fileIndicateIconId = R.drawable.icon_ppt;
+            } else if (suffix.matches("pdf")) {
+                fileIndicateIconId = R.drawable.icon_pdf;
+            }
         }
+        imageView.setBackgroundResource(fileIndicateIconId);
     }
 
     /**
