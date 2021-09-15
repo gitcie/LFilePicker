@@ -75,7 +75,7 @@ public class LFilePickerActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mPathAdapter.setIconStyle(mParamEntity.getIconStyle());
         mRecyclerView.setAdapter(mPathAdapter);
-        mRecyclerView.setmEmptyView(mEmptyView);
+        mRecyclerView.setEmptyView(mEmptyView);
         initListener();
     }
 

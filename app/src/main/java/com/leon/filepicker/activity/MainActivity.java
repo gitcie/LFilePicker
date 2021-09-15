@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.leon.filepicker.R;
 import com.leon.lfilepickerlibrary.LFilePicker;
+import com.leon.lfilepickerlibrary.ui.AntFilePickActivity;
 import com.leon.lfilepickerlibrary.utils.Constant;
 import com.leon.lfilepickerlibrary.utils.FileUtils;
 
@@ -129,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
                 String path = data.getStringExtra("path");
                 Toast.makeText(getApplicationContext(), "选中的路径为" + path, Toast.LENGTH_SHORT).show();
                 Log.i("LeonFilePicker", path);
+                List<String> paths = data.getStringArrayListExtra(AntFilePickActivity.SELECT_PATHS);
+                if (paths != null && !paths.isEmpty()) {
+                    Log.e("MainActivity", "选中的文件" + paths.get(0));
+                }
             }
         }
     }

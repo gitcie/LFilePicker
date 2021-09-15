@@ -9,8 +9,8 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:requestLegacyExternalStorage="true">
-        <activity android:name=".ui.AntFilePickerActivity"
-            android:theme="@style/BottomNavi"
+        <activity android:name=".ui.AntFilePickActivity"
+            android:theme="@style/Theme.MaterialComponents.DayNight.DarkActionBar"
             />
         <activity
             android:name=".ui.LFilePickerActivity"

@@ -7,14 +7,14 @@
 
     <fragment
         android:id="@+id/navigation_latest"
-        android:name="com.leon.lfilepickerlibrary.ui.AntFilePickFragment"
+        android:name="com.leon.lfilepickerlibrary.ui.LatestPickFragment"
         android:label="@string/ant_menu_latest"
         tools:layout="@layout/frag_file_picker"
         />
 
     <fragment
         android:id="@+id/navigation_browse"
-        android:name="com.leon.lfilepickerlibrary.ui.NextFragment"
+        android:name="com.leon.lfilepickerlibrary.ui.ExternalStoragePickFragment"
         android:label="@string/ant_menu_sdcard"
         tools:layout="@layout/frag_file_picker"
         />

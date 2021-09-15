@@ -3,7 +3,7 @@
     <item
         android:id="@+id/navigation_latest"
         android:title="@string/ant_menu_latest"
-        android:icon="@drawable/ic_home_black_24dp"
+        android:icon="@drawable/icon_latest_file"
         />
 
     <item

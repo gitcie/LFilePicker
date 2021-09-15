@@ -52,19 +52,4 @@
         <item name="android:textSize">14sp</item>
     </style>
 
-    <style name="bottom_navigation_inactive">
-        <item name="android:textColor">#666</item>
-        <item name="android:textSize">12sp</item>
-    </style>'
-
-    <style name="bottom_navigation_active">
-        <item name="android:textColor">@color/colorPrimary</item>
-        <item name="android:textSize">12sp</item>
-    </style>
-
-    <style name="bottomNaviTheme" parent="Theme.AppCompat.Light">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="android:textColorSecondary">@color/colorPrimary</item>
-    </style>
-
 </resources>

@@ -5,24 +5,40 @@ import android.content.Context;
 import android.database.Cursor;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
-import android.util.Log;
 
 import com.leon.lfilepickerlibrary.model.ResolverFile;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Dimorinny on 24.10.15.
  */
 public class FileUtils {
+
+    public final static String MIME_TYPE_JPG = "image/jpeg";
+    public final static String MIME_TYPE_PNG = "image/png";
+    public final static String MIME_TYPE_BMP = "image/bmp";
+
+    public final static String MIME_TYPE_MP3 = "audio/mpeg";
+    public final static String MIME_TYPE_RMI = "audio/mid";
+    public final static String MIME_TYPE_WAV = "audio/x-wav";
+    public final static String MIME_TYPE_AMR = "audio/amr";
+
+    public final static String MIME_TYPE_MP4 = "video/mp4";
+    public final static String MIME_TYPE_FLV = "video/x-flv";
+    public final static String MIME_TYPE_MOV = "video/quicktime";
+    public final static String MIME_TYPE_AVI = "video/x-msvideo";
+    public final static String MIME_TYPE_WMV = "video/x-ms-wmv";
+
     public final static String MIME_TYPE_TXT = "text/plain";
     public final static String MIME_TYPE_DOC = "application/msword";
     public final static String MIME_TYPE_DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -31,6 +47,34 @@ public class FileUtils {
     public final static String MIME_TYPE_PDF = "application/pdf";
     public final static String MIME_TYPE_PPT = "application/vnd.ms-powerpoint";
     public final static String MIME_TYPE_PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+
+    private static String reflectSuffixMimeType(String suffix) {
+        String mimeTypeFieldName = "MIME_TYPE_" + suffix.toUpperCase();
+        try {
+            Field mimeTypeField = FileUtils.class.getField(mimeTypeFieldName);
+            if (mimeTypeField != null) {
+                Object value = mimeTypeField.get(FileUtils.class);
+                if (value != null) {
+                    return value.toString();
+                }
+            }
+            return null;
+        } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String[] convertSuffixToMimeType(String... suffixes) {
+        Set<String> result = new HashSet<>();
+        for (String suffix : suffixes) {
+            String mimeType = reflectSuffixMimeType(suffix);
+            if (mimeType != null) {
+                result.add(mimeType);
+            }
+        }
+        return result.toArray(new String[0]);
+    }
 
     public static List<ResolverFile> queryLatestUsedFiles(Context context, String[] mimeTypes) {
         List<ResolverFile> latestUsedFiles = new ArrayList<>();
