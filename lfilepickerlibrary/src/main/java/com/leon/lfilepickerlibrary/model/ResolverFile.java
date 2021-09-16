@@ -10,6 +10,8 @@ public class ResolverFile {
 
     private long createTime;
 
+    private long modifyTime;
+
     public int getId() {
         return id;
     }
@@ -40,5 +42,13 @@ public class ResolverFile {
 
     public void setCreateTime(long createTime) {
         this.createTime = createTime;
+    }
+
+    public long getModifyTime() {
+        return modifyTime;
+    }
+
+    public void setModifyTime(long modifyTime) {
+        this.modifyTime = modifyTime;
     }
 }

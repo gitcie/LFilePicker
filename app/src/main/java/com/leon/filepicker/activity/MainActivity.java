@@ -1,12 +1,17 @@
 package com.leon.filepicker.activity;
 
 import android.Manifest;
+import android.app.Activity;
+import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -101,8 +106,8 @@ public class MainActivity extends AppCompatActivity {
                 .withNotFoundBooks("至少选择一个文件")
                 .withIsGreater(false)//过滤文件大小 小于指定大小的文件
 //                .withFileSize(500 * 1024)//指定文件大小为500K
-                .withFileFilter(new String[]{"txt", "doc","docx", "pdf", "xls", "xlsx"})
-                .start();
+                .withFileFilter(new String[]{"txt", "doc","docx", "pdf", "xls", "xlsx"});
+//                .start();
         String[] mimeTypes = {
                 FileUtils.MIME_TYPE_DOC,
                 FileUtils.MIME_TYPE_DOCX,
@@ -110,7 +115,25 @@ public class MainActivity extends AppCompatActivity {
                 FileUtils.MIME_TYPE_XLSX,
                 FileUtils.MIME_TYPE_PPTX
         };
-        FileUtils.queryLatestUsedFiles(this, mimeTypes);
+//        FileUtils.queryLatestUsedFiles(this, mimeTypes);
+        new LFilePicker()
+                .withActivity(this)
+                .withRequestCode(Consant.REQUESTCODE_FROM_ACTIVITY)
+                .withTitle("文件选择")
+//                .withIconStyle(mIconType)
+//                .withBackIcon(mBackArrawType)
+                .withMultiMode(false)
+                .withMaxNum(2)
+//                .withStartPath(sdCard)//指定初始显示路径
+                .withNotFoundBooks("至少选择一个文件")
+                .withIsGreater(false)//过滤文件大小 小于指定大小的文件
+//                .withFileSize(500 * 1024)//指定文件大小为500K
+                .withFileFilter(new String[]{"doc","docx", "pdf", "xls", "xlsx", "pptx", "ppt"})
+                .startWithLauncher(result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        processActivityResult(result.getData());
+                    }
+                });
     }
 
     public void openFragmentActivity(View view) {
@@ -122,20 +145,31 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             if (requestCode == Consant.REQUESTCODE_FROM_ACTIVITY) {
-                List<String> list = data.getStringArrayListExtra(Constant.RESULT_INFO);
-                //for (String s : list) {
-                //    Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
-                //}
-//                Toast.makeText(getApplicationContext(), "选中了" + list.size() + "个文件", Toast.LENGTH_SHORT).show();
-                String path = data.getStringExtra("path");
-                Toast.makeText(getApplicationContext(), "选中的路径为" + path, Toast.LENGTH_SHORT).show();
-                Log.i("LeonFilePicker", path);
-                List<String> paths = data.getStringArrayListExtra(AntFilePickActivity.SELECT_PATHS);
-                if (paths != null && !paths.isEmpty()) {
-                    Log.e("MainActivity", "选中的文件" + paths.get(0));
-                }
+                processActivityResult(data);
             }
         }
+    }
+
+    private void processActivityResult(Intent data) {
+        List<String> list = data.getStringArrayListExtra(Constant.RESULT_INFO);
+        //for (String s : list) {
+        //    Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
+        //}
+//                Toast.makeText(getApplicationContext(), "选中了" + list.size() + "个文件", Toast.LENGTH_SHORT).show();
+        String path = data.getStringExtra("path");
+        Toast.makeText(getApplicationContext(), "选中的路径为" + path, Toast.LENGTH_SHORT).show();
+        Log.i("LeonFilePicker", path);
+        List<String> paths = data.getStringArrayListExtra(AntFilePickActivity.SELECT_PATHS);
+        if (paths != null && !paths.isEmpty()) {
+            Log.e("MainActivity", "选中的文件" + paths.get(0));
+        }
+
+        ClipData multiFiles = data.getClipData();
+        if (multiFiles != null && multiFiles.getItemCount() > 0) {
+            for (int i = 0; i < multiFiles.getItemCount(); i++) {
+                Log.e("sf", multiFiles.getItemAt(i).getUri().toString());
+            }
+        };
     }
 
     @Override
@@ -157,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                requestPermissions(array, CODE_PERMISSIONS);
+//                                requestPermissions(array, CODE_PERMISSIONS);
                             }
                         })
                         .show();

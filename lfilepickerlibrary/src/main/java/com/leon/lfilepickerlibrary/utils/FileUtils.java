@@ -13,10 +13,13 @@ import java.io.FileFilter;
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -79,12 +82,21 @@ public class FileUtils {
     public static List<ResolverFile> queryLatestUsedFiles(Context context, String[] mimeTypes) {
         List<ResolverFile> latestUsedFiles = new ArrayList<>();
         ContentResolver resolver = context.getContentResolver();
-        String[] columns = {Media._ID, Media.DATA, Media.SIZE, Media.DISPLAY_NAME, Media.MIME_TYPE, Media.DATE_ADDED};
-        StringBuilder whereBuilder = new StringBuilder();
-        for (int i = 0; i < mimeTypes.length; i++) {
-            whereBuilder = whereBuilder.append("or " + Media.MIME_TYPE + " = ? ");
+        String[] columns = {Media._ID, Media.DATA, Media.SIZE, Media.DISPLAY_NAME, Media.MIME_TYPE, Media.DATE_ADDED, Media.DATE_MODIFIED};
+        String wheres = null;
+        long limitRecentTime = limitRecentWeekTime();
+        if (mimeTypes != null && mimeTypes.length > 0) {
+            limitRecentTime = limitRecentMonthTime();
+            StringBuilder whereBuilder = new StringBuilder();
+            for (int i = 0; i < mimeTypes.length; i++) {
+                whereBuilder = whereBuilder.append("or " + Media.MIME_TYPE + " = ? ");
+            }
+            wheres = whereBuilder.substring(3);
         }
-        String wheres = whereBuilder.substring(3);
+        //ContentResolver查询的数据，时间戳的毫秒值只精确到少，而java的日期（日历）获取到的毫秒值精确到毫秒，所以需要除以1000
+        limitRecentTime = limitRecentTime / 1000;
+        String timeWhere = Media.DATE_ADDED + " > " + limitRecentTime + " or " + Media.DATE_MODIFIED + " > " + limitRecentTime;
+        wheres = wheres == null ? timeWhere : "(" + wheres + ") and (" + timeWhere + ")";
         String orderBys = "date_modified desc";
         try (Cursor cursor = resolver.query(MediaStore.Files.getContentUri("external"), columns, wheres, mimeTypes, orderBys)) {
             if (cursor != null) {
@@ -93,6 +105,7 @@ public class FileUtils {
                     String path = cursor.getString(cursor.getColumnIndex(Media.DATA));
                     String mimeType = cursor.getString(cursor.getColumnIndex(Media.MIME_TYPE));
                     long createTime = cursor.getLong(cursor.getColumnIndex(Media.DATE_ADDED));
+                    long modifyTime = cursor.getLong(cursor.getColumnIndex(Media.DATE_MODIFIED));
                     File file = new File(path);
                     if (file.exists()) {
                         ResolverFile rf = new ResolverFile();
@@ -100,6 +113,7 @@ public class FileUtils {
                         rf.setPath(path);
                         rf.setMimeType(mimeType);
                         rf.setCreateTime(createTime);
+                        rf.setModifyTime(modifyTime);
                         latestUsedFiles.add(rf);
                     }
                 }
@@ -114,14 +128,11 @@ public class FileUtils {
     public static List<File> getFileListByDirPath(String path, FileFilter filter) {
         File directory = new File(path);
         File[] files = directory.listFiles(filter);
-        List<File> result = new ArrayList<>();
         if (files == null) {
             return new ArrayList<>();
         }
 
-        for (int i = 0; i < files.length; i++) {
-            result.add(files[i]);
-        }
+        List<File> result = new ArrayList<>(Arrays.asList(files));
         Collections.sort(result, new FileComparator());
         return result;
     }
@@ -202,5 +213,23 @@ public class FileUtils {
             }
         }
         return effective;
+    }
+
+    private static long limitRecentWeekTime() {
+        return limitRecentTimeByDay(-7);
+    }
+
+    private static long limitRecentMonthTime() {
+        return limitRecentTimeByDay(-30);
+    }
+
+    private static long limitRecentTimeByDay(int days) {
+        Calendar calendar = Calendar.getInstance(Locale.getDefault());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        calendar.add(Calendar.DAY_OF_YEAR, days);
+        return calendar.getTimeInMillis();
     }
 }

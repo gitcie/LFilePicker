@@ -1,0 +1,41 @@
+apply plugin: 'maven'
+
+task sourceJar(type: Jar){
+    classifier = "sources"
+    from android.sourceSets.main.java.srcDirs
+}
+
+artifacts {
+    archives sourceJar
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "http://192.168.3.18:8081/repository/maven-releases/") {
+                authentication(userName: "admin", password: "admin123")
+            }
+            snapshotRepository(url: "http://192.168.3.18:8081/repository/maven-snapshots/") {
+                authentication(userName: "admin", password: "admin123")
+            }
+            pom{
+                project {
+                    inceptionYear Calendar.getInstance(Locale.CHINA).get(Calendar.YEAR)
+                    licenses {
+                        license {
+                            name 'The Apache Software License, Version 2.0'
+                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+
+                            distribution 'repo'
+                        }
+                    }
+                }
+                //提交到maven-snapshots时version必须以 -SNAPSHOT 结尾，其它两个不需要
+                version = '1.0.1-SNAPSHOT' //按实际情况修改
+                groupId = 'com.boanda.android' //按实际情况修改
+                artifactId = 'file-picker' //按实际情况修改
+                packaging = 'aar' //也可以是jar
+            }
+        }
+    }
+}

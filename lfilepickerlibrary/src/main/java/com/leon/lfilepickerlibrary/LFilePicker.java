@@ -3,10 +3,16 @@ package com.leon.lfilepickerlibrary;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 
 import com.leon.lfilepickerlibrary.model.ParamEntity;
 import com.leon.lfilepickerlibrary.ui.AntFilePickActivity;
@@ -16,7 +22,10 @@ import com.leon.lfilepickerlibrary.ui.AntFilePickActivity;
  * 时间：2017/3/20 16:57
  */
 public class LFilePicker {
-    private AppCompatActivity mActivity;
+
+    public static ActivityResultLauncher<Intent> pickLauncher = null;
+
+    private FragmentActivity mActivity;
     private Fragment mFragment;
     private Fragment mSupportFragment;
     private String mTitle;
@@ -45,7 +54,7 @@ public class LFilePicker {
      * @param activity
      * @return
      */
-    public LFilePicker withActivity(AppCompatActivity activity) {
+    public LFilePicker withActivity(FragmentActivity activity) {
         this.mActivity = activity;
         return this;
     }
@@ -271,6 +280,16 @@ public class LFilePicker {
         }
     }
 
+    public void startWithLauncher(ActivityResultCallback<ActivityResult> callback) {
+//        StartActivityForResult activityForResult = new StartActivityForResult();
+//        ActivityResultLauncher<Intent> launcher = mActivity.registerForActivityResult(activityForResult, callback);
+        Intent intent = initIntent();
+        Bundle bundle = getBundle();
+        intent.putExtras(bundle);
+        if (pickLauncher != null) {
+            pickLauncher.launch(intent);
+        }
+    }
 
     private Intent initIntent() {
         Intent intent;

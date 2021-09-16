@@ -4,10 +4,9 @@
 
     <style name="LFileTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/white</item>
-        <item name="android:windowLightStatusBar">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/lfile_colorPrimaryDark</item>
-        <item name="colorAccent">@color/lfile_colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
         <item name="homeAsUpIndicator">@mipmap/lfile_back1</item>
 <!--        <item name="actionBarSize">36dp</item>-->
         <item name="actionBarBackgroundColor">#FFFFFF</item>

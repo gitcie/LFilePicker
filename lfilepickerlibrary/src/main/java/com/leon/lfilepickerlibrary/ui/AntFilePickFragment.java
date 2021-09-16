@@ -1,7 +1,10 @@
 package com.leon.lfilepickerlibrary.ui;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.text.TextUtils;
@@ -18,6 +21,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
@@ -33,7 +37,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AntFilePickFragment extends Fragment {
+public abstract class AntFilePickFragment extends Fragment implements RefreshableView {
 
     private final String TAG = "LatestFileListFragment";
     public final static String SD_CARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -44,7 +48,7 @@ public abstract class AntFilePickFragment extends Fragment {
     private Button mBtnAddBook;
     private String mPath;
     private List<File> mCurrentFileList = new ArrayList<>();
-    private final ArrayList<String> mListNumbers = new ArrayList<>();//存放选中条目的数据地址
+    private final ArrayList<String> mSelectedFiles = new ArrayList<>();//存放选中条目的数据地址
     private PathAdapter mPathAdapter;
     private ParamEntity mParamEntity;
     private LFileFilter mFilter;
@@ -154,18 +158,18 @@ public abstract class AntFilePickFragment extends Fragment {
                     mBtnAddBook.setText(getString(R.string.lfile_Selected));
                 } else {
                     //如果已经选择则取消，否则添加进来
-                    if (mListNumbers.contains(mCurrentFileList.get(position).getAbsolutePath())) {
-                        mListNumbers.remove(mCurrentFileList.get(position).getAbsolutePath());
+                    if (mSelectedFiles.contains(mCurrentFileList.get(position).getAbsolutePath())) {
+                        mSelectedFiles.remove(mCurrentFileList.get(position).getAbsolutePath());
                     } else {
-                        mListNumbers.add(mCurrentFileList.get(position).getAbsolutePath());
+                        mSelectedFiles.add(mCurrentFileList.get(position).getAbsolutePath());
                     }
                     if (mParamEntity.getAddText() != null) {
-                        mBtnAddBook.setText(mParamEntity.getAddText() + "( " + mListNumbers.size() + " )");
+                        mBtnAddBook.setText(mParamEntity.getAddText() + "( " + mSelectedFiles.size() + " )");
                     } else {
-                        mBtnAddBook.setText(getString(R.string.lfile_Selected) + "( " + mListNumbers.size() + " )");
+                        mBtnAddBook.setText(getString(R.string.lfile_Selected) + "( " + mSelectedFiles.size() + " )");
                     }
                     //先判断是否达到最大数量，如果数量达到上限提示，否则继续添加
-                    if (mParamEntity.getMaxNum() > 0 && mListNumbers.size() > mParamEntity.getMaxNum()) {
+                    if (mParamEntity.getMaxNum() > 0 && mSelectedFiles.size() > mParamEntity.getMaxNum()) {
                         Toast.makeText(getActivity(), R.string.lfile_OutSize, Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -177,7 +181,7 @@ public abstract class AntFilePickFragment extends Fragment {
                 }
                 if (mParamEntity.isChooseMode()) {
                     //选择文件模式,需要添加文件路径，否则为文件夹模式，直接返回当前路径
-                    mListNumbers.add(mCurrentFileList.get(position).getAbsolutePath());
+                    mSelectedFiles.add(mCurrentFileList.get(position).getAbsolutePath());
                     chooseDone();
                 } else {
                     Toast.makeText(getActivity(), R.string.lfile_ChooseTip, Toast.LENGTH_SHORT).show();
@@ -189,7 +193,7 @@ public abstract class AntFilePickFragment extends Fragment {
         mBtnAddBook.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mParamEntity.isChooseMode() && mListNumbers.size() < 1) {
+                if (mParamEntity.isChooseMode() && mSelectedFiles.size() < 1) {
                     String info = mParamEntity.getNotFoundFiles();
                     if (TextUtils.isEmpty(info)) {
                         Toast.makeText(getActivity(), R.string.lfile_NotFoundBooks, Toast.LENGTH_SHORT).show();
@@ -219,7 +223,7 @@ public abstract class AntFilePickFragment extends Fragment {
         mRecyclerView.scrollToPosition(0);
         setNavigationPath(mPath);
         //清除添加集合中数据
-        mListNumbers.clear();
+        mSelectedFiles.clear();
         if (mParamEntity.getAddText() != null) {
             mBtnAddBook.setText(mParamEntity.getAddText());
         } else {
@@ -246,14 +250,33 @@ public abstract class AntFilePickFragment extends Fragment {
     private void chooseDone() {
         //判断是否数量符合要求
         if (mParamEntity.isChooseMode()) {
-            if (mParamEntity.getMaxNum() > 0 && mListNumbers.size() > mParamEntity.getMaxNum()) {
+            if (mParamEntity.getMaxNum() > 0 && mSelectedFiles.size() > mParamEntity.getMaxNum()) {
                 Toast.makeText(getActivity(), R.string.lfile_OutSize, Toast.LENGTH_SHORT).show();
                 return;
             }
         }
         Intent intent = new Intent();
-        intent.putStringArrayListExtra("paths", mListNumbers);
-        intent.putExtra("path", mTvPath.getText().toString().trim());
+        intent.putStringArrayListExtra("paths", mSelectedFiles);
+        intent.putExtra("path", mPath.trim());
+        String authority = requireActivity().getPackageName() + ".FileProvider";
+        if (mParamEntity.isMultiMode()) {
+            ClipData multiUriData = null;
+            for (int i = 0; i < mSelectedFiles.size(); i++) {
+                String path = mSelectedFiles.get(i);
+                Uri fileUri = FileProvider.getUriForFile(requireActivity(), authority, new File(path));
+                ClipData.Item item = new ClipData.Item(fileUri);
+                if (i == 0) {
+                    multiUriData = new ClipData(new ClipDescription("多选", new String[]{}), item);
+                } else {
+                    multiUriData.addItem(item);
+                }
+            }
+            if (multiUriData != null) {
+                intent.setClipData(multiUriData);
+            }
+        } else {
+            intent.setData(FileProvider.getUriForFile(requireActivity(), authority, new File(mSelectedFiles.get(0))));
+        }
         if (getActivity() != null) {
             getActivity().setResult(Activity.RESULT_OK, intent);
             getActivity().finish();
@@ -269,21 +292,30 @@ public abstract class AntFilePickFragment extends Fragment {
             if (mIsAllSelected) {
                 for (File mListFile : mCurrentFileList) {
                     //不包含再添加，避免重复添加
-                    if (!mListFile.isDirectory() && !mListNumbers.contains(mListFile.getAbsolutePath())) {
-                        mListNumbers.add(mListFile.getAbsolutePath());
+                    if (!mListFile.isDirectory() && !mSelectedFiles.contains(mListFile.getAbsolutePath())) {
+                        mSelectedFiles.add(mListFile.getAbsolutePath());
                     }
                     if (mParamEntity.getAddText() != null) {
-                        mBtnAddBook.setText(mParamEntity.getAddText() + "( " + mListNumbers.size() + " )");
+                        mBtnAddBook.setText(mParamEntity.getAddText() + "( " + mSelectedFiles.size() + " )");
                     } else {
-                        mBtnAddBook.setText(getString(R.string.lfile_Selected) + "( " + mListNumbers.size() + " )");
+                        mBtnAddBook.setText(getString(R.string.lfile_Selected) + "( " + mSelectedFiles.size() + " )");
                     }
                 }
             } else {
-                mListNumbers.clear();
+                mSelectedFiles.clear();
                 mBtnAddBook.setText(getString(R.string.lfile_Selected));
             }
         }
         return true;
+    }
+
+    @Override
+    public void refreshView() {
+        FileLoader loader = getFileLoader();
+        if(getActivity() != null) {
+            mPathAdapter.setFileList(loader.loadIndexFiles(getActivity()));
+            mPathAdapter.notifyDataSetChanged();
+        }
     }
 
     protected ParamEntity getParamEntity() {
