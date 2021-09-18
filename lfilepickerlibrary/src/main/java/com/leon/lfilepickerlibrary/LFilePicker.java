@@ -1,5 +1,6 @@
 package com.leon.lfilepickerlibrary;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -22,8 +23,6 @@ import com.leon.lfilepickerlibrary.ui.AntFilePickActivity;
  * 时间：2017/3/20 16:57
  */
 public class LFilePicker {
-
-    public static ActivityResultLauncher<Intent> pickLauncher = null;
 
     private FragmentActivity mActivity;
     private Fragment mFragment;
@@ -281,14 +280,21 @@ public class LFilePicker {
     }
 
     public void startWithLauncher(ActivityResultCallback<ActivityResult> callback) {
-//        StartActivityForResult activityForResult = new StartActivityForResult();
-//        ActivityResultLauncher<Intent> launcher = mActivity.registerForActivityResult(activityForResult, callback);
+        if (mActivity == null && mFragment == null && mSupportFragment == null) {
+            throw new RuntimeException("You must pass Activity or Fragment by withActivity or withFragment or withSupportFragment method");
+        }
         Intent intent = initIntent();
         Bundle bundle = getBundle();
         intent.putExtras(bundle);
-        if (pickLauncher != null) {
-            pickLauncher.launch(intent);
+        Activity startActivity;
+        if (mActivity != null) {
+            startActivity = mActivity;
+        } else if (mFragment != null) {
+            startActivity = mFragment.requireActivity();
+        } else {
+            startActivity = mSupportFragment.requireActivity();
         }
+        AntFilePicker.Companion.getInstance().launchPicker(startActivity, intent, callback);
     }
 
     private Intent initIntent() {

@@ -1,26 +1,21 @@
 package com.leon.filepicker.activity;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.leon.filepicker.R;
 import com.leon.lfilepickerlibrary.LFilePicker;
@@ -38,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
     private RadioGroup mRgBackArrawType;
     private int mIconType;
     private int mBackArrawType;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -31,7 +31,7 @@ uploadArchives {
                     }
                 }
                 //提交到maven-snapshots时version必须以 -SNAPSHOT 结尾，其它两个不需要
-                version = '1.0.1-SNAPSHOT' //按实际情况修改
+                version = '1.0.1' //按实际情况修改
                 groupId = 'com.boanda.android' //按实际情况修改
                 artifactId = 'file-picker' //按实际情况修改
                 packaging = 'aar' //也可以是jar
