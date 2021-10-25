@@ -205,7 +205,8 @@ public class FileUtils {
         List<File> effective = new ArrayList<>();
         for (File file : files) {
             if(file.isDirectory()) {
-                if (file.listFiles(filter).length > 0) {
+                File[] childFiles = file.listFiles(filter);
+                if (childFiles != null && childFiles.length > 0) {
                     effective.add(file);
                 }
             } else {
