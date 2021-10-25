@@ -28,6 +28,9 @@ class AntFilePickActivity : AppCompatActivity(), RefreshableView {
 
     private lateinit var fragHost: NavHostFragment
 
+    /**
+     * 是否已请求过授权，防止授权操作进入死循环
+     */
     private var hasRequestPermission = false
 
     override fun onCreate(savedInstanceState: Bundle?) {

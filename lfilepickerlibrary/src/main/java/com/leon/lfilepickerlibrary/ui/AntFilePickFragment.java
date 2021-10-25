@@ -53,6 +53,7 @@ public abstract class AntFilePickFragment extends Fragment implements Refreshabl
     private ParamEntity mParamEntity;
     private LFileFilter mFilter;
     private boolean mIsAllSelected = false;
+    private boolean isAdapterLoaded = false;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,6 +76,10 @@ public abstract class AntFilePickFragment extends Fragment implements Refreshabl
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        this.loadListAdapter();
+    }
+
+    protected void loadListAdapter() {
         updateAddButton();
         if (!checkSDState()) {
             Toast.makeText(getActivity(), R.string.lfile_NotFoundPath, Toast.LENGTH_SHORT).show();
@@ -93,6 +98,7 @@ public abstract class AntFilePickFragment extends Fragment implements Refreshabl
         mRecyclerView.setAdapter(mPathAdapter);
         mRecyclerView.setEmptyView(mEmptyView);
         initListener();
+        isAdapterLoaded = true;
     }
 
     /**
@@ -316,6 +322,10 @@ public abstract class AntFilePickFragment extends Fragment implements Refreshabl
             mPathAdapter.setFileList(loader.loadIndexFiles(getActivity()));
             mPathAdapter.notifyDataSetChanged();
         }
+    }
+
+    protected boolean isAdapterLoaded() {
+        return this.isAdapterLoaded;
     }
 
     protected ParamEntity getParamEntity() {

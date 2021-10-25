@@ -1,19 +1,19 @@
 package com.leon.lfilepickerlibrary;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.StyleRes;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 
 import com.leon.lfilepickerlibrary.model.ParamEntity;
 import com.leon.lfilepickerlibrary.ui.AntFilePickActivity;
@@ -331,5 +331,21 @@ public class LFilePicker {
         Bundle bundle = new Bundle();
         bundle.putSerializable("param", paramEntity);
         return bundle;
+    }
+
+    @TargetApi(Build.VERSION_CODES.R)
+    private void showGrantAccessFilePermission() {
+        new AlertDialog.Builder(mActivity)
+                .setTitle("文件访问授权")
+                .setMessage("由于系统限制，浏览存储卡文件需要您授权")
+                .setPositiveButton("前往授权", (dialog, which) -> {
+                    Intent grantIntent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                    mActivity.startActivity(grantIntent);
+                })
+                .setNegativeButton("取消", (dialog, which) -> {
+                    dialog.dismiss();
+                })
+                .create()
+                .show();
     }
 }
